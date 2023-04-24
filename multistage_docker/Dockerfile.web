@@ -1,0 +1,7 @@
+FROM golang:latest
+WORKDIR /app
+COPY dispatcher.go ./
+RUN go build dispatcher.go
+COPY static/ static/
+ENTRYPOINT ["./dispatcher"]
+EXPOSE 80
