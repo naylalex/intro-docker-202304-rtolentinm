@@ -1,7 +1,27 @@
-FROM golang:latest
-WORKDIR /app
-COPY dispatcher.go ./
-RUN go build dispatcher.go
-COPY static/ static/
-ENTRYPOINT ["./dispatcher"]
-EXPOSE 80
+#FROM golang:latest
+#WORKDIR /app
+#COPY dispatcher.go ./
+#RUN go build dispatcher.go
+#COPY static/ static/
+#ENTRYPOINT ["./dispatcher"]
+#EXPOSE 80
+
+FROM alpine:latest AS build
+	WORKDIR /go/src/app
+	COPY . .
+	RUN go mod init app
+	RUN go mod download 
+	RUN CGO_ENABLED=0 go build -o /go/bin/app dispatcher.go
+	
+	FROM alpine:latest
+	COPY --from=build /go/bin/app /app
+	ENTRYPOINT ["/app"]
+    FROM golang:latest AS build
+	WORKDIR /go/src/app
+	COPY . .
+	RUN go mod init app
+	RUN go mod download 
+	RUN CGO_ENABLED=0 go build -o /go/bin/app dispatcher.go
+
+	FROM alpine:latest
+	COPY --from=build /go/bin/app
